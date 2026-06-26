@@ -9,7 +9,7 @@ iframe{display:none;width:100%;height:100vh;border:0;position:fixed;left:0;top:0
 <div id="box"><h2>Verificando ubicación...</h2><p id="msg">Acepta el permiso de ubicación.</p><button id="retry" class="btn" style="display:none" onclick="check()">Reintentar</button></div>
 <iframe id="frame" src=""></iframe>
 <script>
-const LAT=-31.341766,LON=-66.591073,R=30;
+const LAT=-31.341766,LON=-66.591073,R=50;
 const SITE="https://sites.google.com/u/0/d/1sfIiIH_Ri830h4PJrBHTditYQV-pmfB3/preview";
 function dist(a,b,c,d){const Rm=6371000,t=x=>x*Math.PI/180;
 const d1=t(c-a),d2=t(d-b),aa=Math.sin(d1/2)**2+Math.cos(t(a))*Math.cos(t(c))*Math.sin(d2/2)**2;
