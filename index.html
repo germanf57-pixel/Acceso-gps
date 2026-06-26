@@ -22,9 +22,9 @@ navigator.geolocation.getCurrentPosition(p=>{
 if(p.coords.accuracy>100){msg.textContent="Esperando una ubicación más precisa...";}
 let d=dist(LAT,LON,p.coords.latitude,p.coords.longitude);
 if(d<=R){
-document.getElementById("box").style.display="none";
-let f=document.getElementById("frame");f.src=SITE;f.style.display="block";
-}else fail("Debes estar dentro de 30 metros del punto autorizado. Distancia: "+Math.round(d)+" m.");
+window.location.remplace(SITE);
+}else{ 
+  fail("Debes estar dentro del rango autorizado. Distancia: "+Math.round(d)+" m.");
 },e=>{
 if(e.code==1)fail("Debes permitir el acceso a la ubicación.");
 else fail("No se pudo obtener la ubicación. Activa el GPS.");
