@@ -3,29 +3,109 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Acceso - Distribuidora Don Chicho</title>
+<title>Registro de Cursantes - Distribuidora Don Chicho</title>
 <style>
-body{font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;height:100vh;background:#111;color:#fff;text-align:center;margin:0}
-#box{max-width:600px;padding:20px}
-.btn{padding:10px 18px; margin-top: 15px; cursor: pointer; background-color: #4CAF50; color: white; border: none; border-radius: 5px; font-size: 16px;}
+body{font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#111;color:#fff;text-align:center;margin:0;padding:20px;box-sizing:border-box;}
+#box{max-width:500px;width:100%;background:#222;padding:30px;border-radius:10px;box-shadow:0 4px 15px rgba(0,0,0,0.5);}
+.btn{padding:12px 20px; margin-top: 15px; cursor: pointer; background-color: #4CAF50; color: white; border: none; border-radius: 5px; font-size: 16px; width: 100%; font-weight: bold;}
 .btn:hover {background-color: #45a049;}
-/* Eliminamos los estilos del iframe porque ya no lo usaremos */
+.btn-retry{background-color: #f44336;}
+.btn-retry:hover{background-color: #da190b;}
+/* Estilos del Formulario de Cursantes */
+#form-container { display: none; text-align: left; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-size: 14px; color: #ccc; font-weight: bold; }
+.form-group input, .form-group select { width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #333; color: #fff; box-sizing: border-box; font-size: 16px; }
+.form-group select option { background: #222; color: #fff; }
 </style>
 </head>
 <body>
 
 <div id="box">
-    <h2>Verificando ubicación...</h2>
-    <p id="msg">Acepta el permiso de ubicación.</p>
-    <button id="retry" class="btn" style="display:none" onclick="check()">Reintentar</button>
-    <button id="enter" class="btn" style="display:none" onclick="redirect()">Ingresar al Sitio</button>
+    <!-- Verificación de GPS -->
+    <div id="gps-container">
+        <h2 id="title">Verificando ubicación...</h2>
+        <p id="msg">Por favor, acepta el permiso de ubicación para acceder al registro del curso.</p>
+        <button id="retry" class="btn btn-retry" style="display:none" onclick="check()">Reintentar verificación</button>
+    </div>
+
+    <!-- Formulario de Inscripción Seguro -->
+    <div id="form-container">
+        <h2 style="margin-top:0;">Registro de Cursante</h2>
+        <p style="color: #4CAF50; font-size: 14px; margin-bottom: 20px;">✓ Ubicación validada en el establecimiento.</p>
+        
+        <form id="cursoForm" onsubmit="enviarDatos(event)">
+            <div class="form-group">
+                <label for="apellido">APELLIDO:</label>
+                <input type="text" id="apellido" placeholder="Ingrese sus apellidos" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="nombre">NOMBRE:</label>
+                <input type="text" id="nombre" placeholder="Ingrese sus nombres" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="dni">DNI:</label>
+                <input type="number" id="dni" placeholder="Solo números, sin puntos" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="jerarquia">JERARQUÍA:</label>
+                <select id="jerarquia" required>
+                    <option value="" disabled selected>Seleccione su jerarquía...</option>
+                    <option value="AGENTE">AGENTE</option>
+                    <option value="CABO">CABO</option>
+                    <option value="CABO 1°">CABO 1°</option>
+                    <option value="SARGENTO">SARGENTO</option>
+                    <option value="SARGENTO 1°">SARGENTO 1°</option>
+                    <option value="SUB OFICIAL ESCRIBIENTE">SUB OFICIAL ESCRIBIENTE</option>
+                    <option value="SUB OFICIAL AUXILIAR">SUB OFICIAL AUXILIAR</option>
+                    <option value="SUB OFICIAL MAYOR">SUB OFICIAL MAYOR</option>
+                    <option value="OFICIAL AYUDANTE">OFICIAL AYUDANTE</option>
+                    <option value="OFICIAL SUB INSPECTOR">OFICIAL SUB INSPECTOR</option>
+                    <option value="OFICIAL INSPECTOR">OFICIAL INSPECTOR</option>
+                    <option value="OFICIAL PRINCIPAL">OFICIAL PRINCIPAL</option>
+                    <option value="SUB COMISARIO">SUB COMISARIO</option>
+                    <option value="COMISARIO">COMISARIO</option>
+                    <option value="COMISARIO INSPECTOR">COMISARIO INSPECTOR</option>
+                    <option value="COMISARIO MAYOR">COMISARIO MAYOR</option>
+                    <option value="COMISARIO GENERAL">COMISARIO GENERAL</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="dependencia">DEPENDENCIA:</label>
+                <select id="dependencia" required>
+                    <option value="" disabled selected>Seleccione su dependencia...</option>
+                    <option value="CRIA ULAPES">CRIA ULAPES</option>
+                    <option value="CRIA MILAGRO">CRIA MILAGRO</option>
+                    <option value="CRIA TELLO">CRIA TELLO</option>
+                    <option value="CRIA CATUNA">CRIA CATUNA</option>
+                    <option value="CRIA MALANZAN">CRIA MALANZAN</option>
+                    <option value="CRIA PORTEZUELO">CRIA PORTEZUELO</option>
+                    <option value="SUB COMISARIA NACATE">SUB COMISARIA NACATE</option>
+                    <option value="SUB COMISARIA LA COLONIA">SUB COMISARIA LA COLONIA</option>
+                    <option value="CRIA DE LA MUJER EL MENOR Y LA FAMILIA">CRIA DE LA MUJER EL MENOR Y LA FAMILIA</option>
+                    <option value="UNIDAD DE SEGURIDAD DE PREVENCION TERRITORIAL">UNIDAD DE SEGURIDAD DE PREVENCION TERRITORIAL</option>
+                    <option value="UNIDAD OPERATIVA ESPECIAL DE LUCHA CONTRA EL NARCOTRAFICO">UNIDAD OPERATIVA ESPECIAL DE LUCHA CONTRA EL NARCOTRAFICO</option>
+                    <option value="SEGURIDAD VIAL CHEPES">SEGURIDAD VIAL CHEPES</option>
+                    <option value="DPTO INVESTIGACIONES CHEPES">DPTO INVESTIGACIONES CHEPES</option>
+                    <option value="ESCUELA DE FORMACION DE AGENTES">ESCUELA DE FORMACION DE AGENTES</option>
+                    <option value="AYUDANTIA DE REGIONAL">AYUDANTIA DE REGIONAL</option>
+                </select>
+            </div>
+            
+            <button type="submit" id="submitBtn" class="btn">Confirmar Asistencia</button>
+        </form>
+    </div>
 </div>
 
 <script>
-// IMPORTANTE: Cambiá este enlace por la URL PÚBLICA de tu sitio en Google Sites una vez publicado.
-const SITE = "https://sites.google.com/view/paginadepruebaur6/p%C3%A1gina-principal";
+// Pega acá tu URL de Google Apps Script
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwkHUl_YdPqzQ8oud9AayyTnS9_c8JJavIpNOecrUy6TPZf7ujWTXdzvBctk-gy1Rf2ag/exec"; 
 
-const LAT = -31.341776698863352, LON = -66.59105155190622, R = 70;
+const LAT = -31.359617, LON = -66.586670, R = 30;
 
 function dist(a,b,c,d){
     const Rm = 6371000, t = x => x*Math.PI/180;
@@ -34,59 +114,86 @@ function dist(a,b,c,d){
 }
 
 function fail(m){
-    let msg = document.getElementById("msg");
-    let retry = document.getElementById("retry");
-    let enter = document.getElementById("enter");
-    
-    msg.textContent = m;
-    retry.style.display = 'inline-block';
-    enter.style.display = 'none';
+    document.getElementById("msg").textContent = m;
+    document.getElementById("retry").style.display = 'inline-block';
 }
 
 function success() {
-    let msg = document.getElementById("msg");
-    let retry = document.getElementById("retry");
-    let enter = document.getElementById("enter");
-    
-    msg.textContent = "¡Ubicación verificada! Ya puedes acceder.";
-    retry.style.display = 'none';
-    enter.style.display = 'inline-block';
-    
-    // Opcional: Si querés que redirija solo sin tocar el botón, descomentá la siguiente línea.
-    // Aunque el botón es más seguro para evitar bloqueos del navegador.
-    // window.location.href = SITE; 
-}
-
-function redirect() {
-    window.location.href = SITE;
+    document.getElementById("gps-container").style.display = 'none';
+    document.getElementById("form-container").style.display = 'block';
 }
 
 function check(){
     let msg = document.getElementById("msg");
     let retry = document.getElementById("retry");
-    
     retry.style.display = 'none';
-    msg.textContent = "Verificando tu ubicación...";
+    msg.textContent = "Estabilizando señal GPS... Asegúrate de no estar bajo techo.";
     
     if(!navigator.geolocation){
-        fail("Este dispositivo no soporta GPS.");
+        fail("Este dispositivo no cuenta con soporte de geolocalización.");
         return;
     }
 
-    navigator.geolocation.getCurrentPosition(p => {
-        let d = dist(LAT, LON, p.coords.latitude, p.coords.longitude);
-        if(d <= R){
-            success(); // Si está a menos de 30 metros, mostramos el botón de éxito
-        } else {
-            fail("Debes estar dentro del Rango Permitido. Distancia: " + Math.round(d) + " m.");
-        }
-    }, e => {
-        if(e.code == 1) fail("Debes permitir el acceso a la ubicación cuando el navegador te lo pregunte.");
-        else fail("No se pudo obtener la ubicación. Activa el GPS.");
-    }, {enableHighAccuracy: true, timeout: 15000, maximumAge: 0});
+    let intentos = 0;
+    const maxIntentos = 6;
+
+    function obtenerPosicion() {
+        navigator.geolocation.getCurrentPosition(p => {
+            intentos++;
+            let precision = p.coords.accuracy;
+            
+            if (precision > 40 && intentos < maxIntentos) {
+                msg.textContent = `Buscando precisión satelital... (Intento ${intentos}/${maxIntentos})`;
+                setTimeout(obtenerPosicion, 2500);
+                return;
+            }
+
+            let d = dist(LAT, LON, p.coords.latitude, p.coords.longitude);
+            if (d <= R) {
+                success();
+            } else {
+                fail(`Acceso denegado. Debes realizar el registro dentro del aula/establecimiento. Distancia actual: ${Math.round(d)} metros.`);
+            }
+        }, e => {
+            if(e.code == 1) fail("Es obligatorio permitir la ubicación para realizar la inscripción.");
+            else fail("No se pudo conectar al GPS. Por favor, actívalo en los ajustes de tu teléfono.");
+        }, {enableHighAccuracy: true, timeout: 10000, maximumAge: 0});
+    }
+    obtenerPosicion();
 }
 
-// Iniciamos la comprobación al cargar la página
+function enviarDatos(event) {
+    event.preventDefault();
+    
+    let btn = document.getElementById("submitBtn");
+    btn.disabled = true;
+    btn.textContent = "Registrando...";
+
+    let datosFormulario = {
+        apellido: document.getElementById("apellido").value.toUpperCase(), 
+        nombre: document.getElementById("nombre").value.toUpperCase(),
+        dni: document.getElementById("dni").value,
+        jerarquia: document.getElementById("jerarquia").value,
+        dependencia: document.getElementById("dependencia").value // Al ser select, ya viaja con el texto exacto elegido
+    };
+
+    fetch(WEB_APP_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datosFormulario)
+    })
+    .then(() => {
+        document.getElementById("box").innerHTML = "<h2 style='color: #4CAF50;'>¡Registro Exitoso!</h2><p>Tu asistencia ha sido guardada en la base de datos del curso correctamente.</p>";
+    })
+    .catch(err => {
+        alert("Ocurrió un error de red. Intenta enviar el formulario nuevamente.");
+        btn.disabled = false;
+        btn.textContent = "Confirmar Asistencia";
+        console.error(err);
+    });
+}
+
 check();
 </script>
 </body>
