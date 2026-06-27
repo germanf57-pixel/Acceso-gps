@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Registro de Cursantes - Unidad Regional Sexta</title>
+<title>Registro de Cursantes</title>
 <style>
 body{font-family:Arial,sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;background:#111;color:#fff;text-align:center;margin:0;padding:20px;box-sizing:border-box;}
 #box{max-width:500px;width:100%;background:#222;padding:30px;border-radius:10px;box-shadow:0 4px 15px rgba(0,0,0,0.5);}
@@ -11,7 +11,6 @@ body{font-family:Arial,sans-serif;display:flex;justify-content:center;align-item
 .btn:hover {background-color: #45a049;}
 .btn-retry{background-color: #f44336;}
 .btn-retry:hover{background-color: #da190b;}
-/* Estilos del Formulario de Cursantes */
 #form-container { display: none; text-align: left; }
 .form-group { margin-bottom: 15px; }
 .form-group label { display: block; margin-bottom: 5px; font-size: 14px; color: #ccc; font-weight: bold; }
@@ -22,17 +21,17 @@ body{font-family:Arial,sans-serif;display:flex;justify-content:center;align-item
 <body>
 
 <div id="box">
-    <!-- Verificación de GPS -->
+    <!-- Estado de carga y GPS -->
     <div id="gps-container">
-        <h2 id="title">Verificando ubicación...</h2>
-        <p id="msg">Por favor, acepta el permiso de ubicación para acceder al registro del curso.</p>
-        <button id="retry" class="btn btn-retry" style="display:none" onclick="check()">Reintentar verificación</button>
+        <h2 id="title">Conectando con el panel...</h2>
+        <p id="msg">Obteniendo parámetros de seguridad del curso.</p>
+        <button id="retry" class="btn btn-retry" style="display:none" onclick="cargarConfiguracion()">Reintentar</button>
     </div>
 
     <!-- Formulario de Inscripción Seguro -->
     <div id="form-container">
         <h2 style="margin-top:0;">Registro de Cursante</h2>
-        <p style="color: #4CAF50; font-size: 14px; margin-bottom: 20px;">✓ Ubicación validada en el establecimiento.</p>
+        <p style="color: #4CAF50; font-size: 14px; margin-bottom: 20px;">✓ Dispositivo y Ubicación validados.</p>
         
         <form id="cursoForm" onsubmit="enviarDatos(event)">
             <div class="form-group">
@@ -102,10 +101,11 @@ body{font-family:Arial,sans-serif;display:flex;justify-content:center;align-item
 </div>
 
 <script>
-// Pega acá tu URL de Google Apps Script
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwkHUl_YdPqzQ8oud9AayyTnS9_c8JJavIpNOecrUy6TPZf7ujWTXdzvBctk-gy1Rf2ag/exec"; 
+// PEGA ACÁ TU URL DE APPS SCRIPT
+const WEB_APP_URL = "TU_URL_DE_GOOGLE_APPS_SCRIPT_AQUÍ"; 
 
-const LAT = -31.352915, LON = -66.586866, R = 70;
+// Variables globales que se llenarán solas desde la planilla
+let CONFIG = { latitud: 0, longitud: 0, radio: 0, id_curso: "" };
 
 function dist(a,b,c,d){
     const Rm = 6371000, t = x => x*Math.PI/180;
@@ -114,20 +114,46 @@ function dist(a,b,c,d){
 }
 
 function fail(m){
+    document.getElementById("title").textContent = "Atención";
     document.getElementById("msg").textContent = m;
     document.getElementById("retry").style.display = 'inline-block';
 }
 
-function success() {
-    document.getElementById("gps-container").style.display = 'none';
-    document.getElementById("form-container").style.display = 'block';
+// Paso 1: Leer el panel de control remoto de Google Sheets
+function cargarConfiguracion() {
+    document.getElementById("retry").style.display = 'none';
+    document.getElementById("title").textContent = "Conectando...";
+    document.getElementById("msg").textContent = "Estableciendo conexión segura...";
+
+    fetch(WEB_APP_URL)
+    .then(res => res.json())
+    .then(data => {
+        if(data.error) {
+            fail("Error en el panel de control: " + data.error);
+            return;
+        }
+        CONFIG = data;
+        
+        // SEGURIDAD: Validar si este dispositivo ya completó ESTE curso concreto
+        if (localStorage.getItem("asistencia_enviada_" + CONFIG.id_curso)) {
+            fail("Este dispositivo ya se encuentra registrado en el curso actual (" + CONFIG.id_curso + "). No se permiten duplicados.");
+            return;
+        }
+
+        // Si el dispositivo está limpio, pasamos a validar el GPS
+        validarGPS();
+    })
+    .catch(err => {
+        fail("No se pudo obtener la configuración. Verifica tu conexión a internet.");
+        console.error(err);
+    });
 }
 
-function check(){
+// Paso 2: Validar ubicación en base a los datos descargados
+function validarGPS(){
     let msg = document.getElementById("msg");
-    let retry = document.getElementById("retry");
-    retry.style.display = 'none';
-    msg.textContent = "Estabilizando señal GPS... Asegúrate de no estar bajo techo.";
+    document.getElementById("title").textContent = "Verificando GPS...";
+    msg.textContent = "Estabilizando señal satelital... Por favor espera.";
     
     if(!navigator.geolocation){
         fail("Este dispositivo no cuenta con soporte de geolocalización.");
@@ -135,7 +161,7 @@ function check(){
     }
 
     let intentos = 0;
-    const maxIntentos = 6;
+    const maxIntentos = 5;
 
     function obtenerPosicion() {
         navigator.geolocation.getCurrentPosition(p => {
@@ -143,38 +169,40 @@ function check(){
             let precision = p.coords.accuracy;
             
             if (precision > 40 && intentos < maxIntentos) {
-                msg.textContent = `Buscando precisión satelital... (Intento ${intentos}/${maxIntentos})`;
-                setTimeout(obtenerPosicion, 2500);
+                msg.textContent = `Ajustando precisión del GPS... (Intento ${intentos}/${maxIntentos})`;
+                setTimeout(obtenerPosicion, 2000);
                 return;
             }
 
-            let d = dist(LAT, LON, p.coords.latitude, p.coords.longitude);
-            if (d <= R) {
-                success();
+            let d = dist(CONFIG.latitud, CONFIG.longitud, p.coords.latitude, p.coords.longitude);
+            if (d <= CONFIG.radio) {
+                // Éxito: Ocultamos pantalla de carga y mostramos formulario
+                document.getElementById("gps-container").style.display = 'none';
+                document.getElementById("form-container").style.display = 'block';
             } else {
-                fail(`Debe Estar Dentro Del Rango Permitido. Distancia actual: ${Math.round(d)} metros.`);
+                fail(`Acceso denegado. Debes registrarte en el establecimiento autorizado. Distancia: ${Math.round(d)} metros.`);
             }
         }, e => {
-            if(e.code == 1) fail("Es obligatorio permitir la ubicación para realizar la inscripción.");
-            else fail("No se pudo conectar al GPS. Por favor, actívalo en los ajustes de tu teléfono.");
+            fail("Es obligatorio activar y permitir el acceso al GPS para continuar con la asistencia.");
         }, {enableHighAccuracy: true, timeout: 10000, maximumAge: 0});
     }
     obtenerPosicion();
 }
 
+// Paso 3: Enviar los datos del cursante
 function enviarDatos(event) {
     event.preventDefault();
     
     let btn = document.getElementById("submitBtn");
     btn.disabled = true;
-    btn.textContent = "Registrando...";
+    btn.textContent = "Registrando asistencia...";
 
     let datosFormulario = {
-        apellido: document.getElementById("apellido").value.toUpperCase(), 
-        nombre: document.getElementById("nombre").value.toUpperCase(),
-        dni: document.getElementById("dni").value,
+        apellido: document.getElementById("apellido").value.toUpperCase().trim(), 
+        nombre: document.getElementById("nombre").value.toUpperCase().trim(),
+        dni: document.getElementById("dni").value.trim(),
         jerarquia: document.getElementById("jerarquia").value,
-        dependencia: document.getElementById("dependencia").value // Al ser select, ya viaja con el texto exacto elegido
+        dependencia: document.getElementById("dependencia").value
     };
 
     fetch(WEB_APP_URL, {
@@ -184,17 +212,20 @@ function enviarDatos(event) {
         body: JSON.stringify(datosFormulario)
     })
     .then(() => {
-        document.getElementById("box").innerHTML = "<h2 style='color: #4CAF50;'>¡Registro Exitoso!</h2><p>Tu asistencia ha sido guardada en la base de datos del curso correctamente.</p>";
+        // SEGURIDAD: Guardamos en la memoria del celular que ya completó ESTE curso exacto
+        localStorage.setItem("asistencia_enviada_" + CONFIG.id_curso, "true");
+        
+        document.getElementById("box").innerHTML = "<h2 style='color: #4CAF50;'>¡Registro Exitoso!</h2><p>Tu asistencia ha sido guardada correctamente en la base de datos.</p>";
     })
     .catch(err => {
-        alert("Ocurrió un error de red. Intenta enviar el formulario nuevamente.");
+        alert("Ocurrió un error al enviar. Intenta de nuevo.");
         btn.disabled = false;
         btn.textContent = "Confirmar Asistencia";
-        console.error(err);
     });
 }
 
-check();
+// Iniciar todo el flujo automático al abrir la página
+cargarConfiguracion();
 </script>
 </body>
 </html>
