@@ -180,7 +180,7 @@ function validarGPS(){
                 document.getElementById("gps-container").style.display = 'none';
                 document.getElementById("form-container").style.display = 'block';
             } else {
-                fail(`Acceso denegado. Debes registrarte en el establecimiento autorizado. Distancia: ${Math.round(d)} metros.`);
+                fail(`Fuera de Rango. Distancia: ${Math.round(d)} metros.`);
             }
         }, e => {
             fail("Es obligatorio activar y permitir el acceso al GPS para continuar con la asistencia.");
