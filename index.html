@@ -152,7 +152,7 @@ function check(){
             if (d <= R) {
                 success();
             } else {
-                fail(`Acceso denegado. Debes realizar el registro dentro del aula/establecimiento. Distancia actual: ${Math.round(d)} metros.`);
+                fail(`Bebe estar dentro del rango permitido. Distancia actual: ${Math.round(d)} metros.`);
             }
         }, e => {
             if(e.code == 1) fail("Es obligatorio permitir la ubicación para realizar la inscripción.");
